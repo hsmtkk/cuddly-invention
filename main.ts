@@ -28,39 +28,7 @@ class MyStack extends TerraformStack {
       }],
     });
 
-    const cookietest_zip = new TerraformAsset(this, 'cookietest_zip', {
-      path: path.resolve('cookietest'),
-      type: AssetType.ARCHIVE,
-    });
-
-    const cookietest_object = new google.StorageBucketObject(this, 'cookietest_object', {
-      bucket: asset_bucket.name,
-      name: cookietest_zip.assetHash,
-      source: cookietest_zip.path,
-    });
-
-    const cookietest_func = new google.Cloudfunctions2Function(this, 'cookietest', {
-      buildConfig: {
-        entryPoint: 'cookietest',
-        runtime: 'go119',
-        source: {
-          storageSource: {
-            bucket: asset_bucket.name,
-            object: cookietest_object.name,
-          },
-        }
-      },
-      location: default_location,
-      name: 'cookietest',
-    });
-
-    new google.CloudRunServiceIamPolicy(this, 'cookietest_noauth', {
-      location: default_location,
-      policyData: noauth_policy.policyData,
-      service: cookietest_func.name,
-    });
-
-    const func_names = ['increment', 'login', 'logout'];
+    const func_names = ['cookietest', 'increment', 'login', 'logout'];
 
     for (const func_name of func_names){
       const asset = new TerraformAsset(this, `${func_name}_asset`, {
