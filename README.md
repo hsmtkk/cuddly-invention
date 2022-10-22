@@ -1,2 +1,1 @@
-# cuddly-invention
-Cloud Functions session management
+Cloud Load Balancer cannot have Cloud Functions as backend.
