@@ -6,7 +6,7 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
-	"github.com/hsmtkk/cuddly-invention/common"
+	"github.com/hsmtkk/cuddly-invention/common/env"
 )
 
 func init() {
@@ -25,11 +25,11 @@ func logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func logout2(w http.ResponseWriter, r *http.Request) (int, error) {
-	projectID, err := common.RequiredEnv("PROJECT_ID")
+	projectID, err := env.RequiredEnv("PROJECT_ID")
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
-	sessionCollection, err := common.RequiredEnv("SESSION_COLLECTION")
+	sessionCollection, err := env.RequiredEnv("SESSION_COLLECTION")
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}

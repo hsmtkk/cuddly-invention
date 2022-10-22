@@ -5,6 +5,7 @@ go 1.19
 require (
 	cloud.google.com/go/firestore v1.8.0
 	github.com/GoogleCloudPlatform/functions-framework-go v1.6.1
+	github.com/hsmtkk/cuddly-invention/common v0.0.0-20221022210312-3fb4b7e36fa8
 )
 
 require (

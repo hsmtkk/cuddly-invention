@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"os"
 
 	"cloud.google.com/go/firestore"
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
+	"github.com/hsmtkk/cuddly-invention/common/env"
+	"github.com/hsmtkk/cuddly-invention/common/model"
 )
 
 func init() {
@@ -36,15 +37,15 @@ func increment(w http.ResponseWriter, r *http.Request) {
 }
 
 func increment2(w http.ResponseWriter, r *http.Request) (int, int, error) {
-	projectID, err := requiredEnv("PROJECT_ID")
+	projectID, err := env.RequiredEnv("PROJECT_ID")
 	if err != nil {
 		return 0, http.StatusInternalServerError, err
 	}
-	sessionCollection, err := requiredEnv("SESSION_COLLECTION")
+	sessionCollection, err := env.RequiredEnv("SESSION_COLLECTION")
 	if err != nil {
 		return 0, http.StatusInternalServerError, err
 	}
-	countCollection, err := requiredEnv("COUNT_COLLECTION")
+	countCollection, err := env.RequiredEnv("COUNT_COLLECTION")
 	if err != nil {
 		return 0, http.StatusInternalServerError, err
 	}
@@ -68,10 +69,6 @@ func increment2(w http.ResponseWriter, r *http.Request) (int, int, error) {
 	return count, http.StatusOK, nil
 }
 
-type SessionData struct {
-	UserID string `firestore:"userid"`
-}
-
 func getUserID(ctx context.Context, projectID, sessionCollection, sessionID string) (string, error) {
 	client, err := firestore.NewClient(ctx, projectID)
 	if err != nil {
@@ -82,15 +79,11 @@ func getUserID(ctx context.Context, projectID, sessionCollection, sessionID stri
 	if err != nil {
 		return "", fmt.Errorf("sessionID %s does not exist", sessionID)
 	}
-	var data SessionData
+	var data model.SessionModel
 	if err := snap.DataTo(&data); err != nil {
 		return "", fmt.Errorf("firestore.DocumentSnapshot.DataTo failed; %w", err)
 	}
 	return data.UserID, nil
-}
-
-type CountData struct {
-	Count int `firestore:"count"`
 }
 
 func updateCount(ctx context.Context, projectID, countCollection, userID string) (int, error) {
@@ -99,7 +92,7 @@ func updateCount(ctx context.Context, projectID, countCollection, userID string)
 		return 0, fmt.Errorf("firestore.NewClient failed; %w", err)
 	}
 	defer client.Close()
-	data := CountData{Count: 0}
+	data := model.CountModel{Count: 0}
 	snap, err := client.Collection(countCollection).Doc(userID).Get(ctx)
 	if err == nil {
 		if err := snap.DataTo(&data); err != nil {
@@ -111,12 +104,4 @@ func updateCount(ctx context.Context, projectID, countCollection, userID string)
 		return 0, fmt.Errorf("firestore.DocumentRef.Set failed; %w", err)
 	}
 	return data.Count, nil
-}
-
-func requiredEnv(key string) (string, error) {
-	val := os.Getenv(key)
-	if val == "" {
-		return "", fmt.Errorf("you must define %s environment variable", key)
-	}
-	return val, nil
 }

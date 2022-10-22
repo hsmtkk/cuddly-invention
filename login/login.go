@@ -3,11 +3,12 @@ package login
 import (
 	"fmt"
 	"net/http"
-	"os"
 
 	"cloud.google.com/go/firestore"
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
 	"github.com/google/uuid"
+	"github.com/hsmtkk/cuddly-invention/common/env"
+	"github.com/hsmtkk/cuddly-invention/common/model"
 )
 
 func init() {
@@ -40,10 +41,6 @@ func handleGet(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-type FirestoreRecord struct {
-	UserID string `firestore:"userid"`
-}
-
 func handlePost(w http.ResponseWriter, r *http.Request) {
 	sessionID, code, err := handlePost2(w, r)
 	if err != nil {
@@ -67,12 +64,12 @@ func handlePost2(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	}
 	sessionID := uuid.NewString()
 
-	projectID, err := requiredEnv("PROJECT_ID")
+	projectID, err := env.RequiredEnv("PROJECT_ID")
 	if err != nil {
 		return "", http.StatusInternalServerError, err
 	}
 
-	collection, err := requiredEnv("SESSION_COLLECTION")
+	collection, err := env.RequiredEnv("SESSION_COLLECTION")
 	if err != nil {
 		return "", http.StatusInternalServerError, err
 	}
@@ -83,18 +80,10 @@ func handlePost2(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	}
 	defer client.Close()
 
-	if _, _, err := client.Collection(collection).Add(r.Context(), FirestoreRecord{
+	if _, _, err := client.Collection(collection).Add(r.Context(), model.SessionModel{
 		UserID: userID,
 	}); err != nil {
 		return "", http.StatusInternalServerError, err
 	}
 	return sessionID, http.StatusMovedPermanently, nil
-}
-
-func requiredEnv(key string) (string, error) {
-	val := os.Getenv(key)
-	if val == "" {
-		return "", fmt.Errorf("you must define %s environment variable", key)
-	}
-	return val, nil
 }
