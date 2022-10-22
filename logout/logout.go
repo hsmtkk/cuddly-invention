@@ -47,7 +47,7 @@ func logout2(w http.ResponseWriter, r *http.Request) (int, error) {
 	sessionID := cookie.Value
 
 	if _, err := client.Collection(sessionCollection).Doc(sessionID).Delete(r.Context()); err != nil {
-		return 0, 0
+		return 0, fmt.Errorf("firestore.DocumentRef.Delete failed; %w", err)
 	}
 
 	return 0, nil
