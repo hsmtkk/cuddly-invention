@@ -86,7 +86,7 @@ class MyStack extends TerraformStack {
           },
         },
         location: default_location,
-        name: `${func_name}_func`,
+        name: `${func_name}`,
       });
 
       new google.CloudRunServiceIamPolicy(this, `${func_name}_noauth`, {
